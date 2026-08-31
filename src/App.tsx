@@ -1,122 +1,185 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState } from 'react';
+import useRequest from './hooks/useRequest';
+import './App.css';
 
-function App() {
-  const [count, setCount] = useState(0)
+// ── Mock API（模拟异步请求）──────────────────────────────────────────
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+/** 模拟获取用户列表（成功） */
+async function fetchUsers(): Promise<string[]> {
+  await delay(800);
+  return ['Alice', 'Bob', 'Charlie'];
 }
 
-export default App
+/** 模拟获取数据（可能失败） */
+async function fetchMaybeFail(shouldFail: boolean): Promise<string> {
+  await delay(600);
+  if (shouldFail) throw new Error('请求失败：网络异常');
+  return `数据加载成功 @ ${new Date().toLocaleTimeString()}`;
+}
+
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// ── 子组件 ──────────────────────────────────────────────────────────
+
+/** 示例 1：自动请求 + loading / error / data 三态 */
+function AutoFetchDemo() {
+  const { data, loading, error, run } = useRequest(fetchUsers);
+
+  return (
+    <section className="demo-card">
+      <h2>示例 1：自动请求（immediate: true，默认）</h2>
+      {loading && <p className="status loading">⏳ 加载中...</p>}
+      {error && <p className="status error">❌ {error.message}</p>}
+      {data && (
+        <ul>
+          {data.map((name) => (
+            <li key={name}>{name}</li>
+          ))}
+        </ul>
+      )}
+      <button onClick={() => run()}>🔄 重新请求</button>
+    </section>
+  );
+}
+
+/** 示例 2：手动触发（immediate: false，带参数） */
+function ManualTriggerDemo() {
+  const [shouldFail, setShouldFail] = useState(false);
+  const { data, loading, error, run } = useRequest(fetchMaybeFail, {
+    immediate: false,
+  });
+
+  return (
+    <section className="demo-card">
+      <h2>示例 2：手动触发（immediate: false）</h2>
+      <label>
+        <input
+          type="checkbox"
+          checked={shouldFail}
+          onChange={(e) => setShouldFail(e.target.checked)}
+        />
+        模拟请求失败
+      </label>
+      <button onClick={() => run(shouldFail)} disabled={loading}>
+        {loading ? '⏳ 请求中...' : '📤 发起请求'}
+      </button>
+      {error && <p className="status error">❌ {error.message}</p>}
+      {data && <p className="status success">✅ {data}</p>}
+    </section>
+  );
+}
+
+/** 示例 3：onSuccess / onError 回调 */
+function CallbackDemo() {
+  const [logs, setLogs] = useState<string[]>([]);
+  const { data, loading, error, run } = useRequest(fetchMaybeFail, {
+    immediate: false,
+    onSuccess: (result) =>
+      setLogs((prev) => [...prev, `[成功] ${result}`]),
+    onError: (err) =>
+      setLogs((prev) => [...prev, `[失败] ${err.message}`]),
+  });
+
+  return (
+    <section className="demo-card">
+      <h2>示例 3：onSuccess / onError 回调</h2>
+      <button onClick={() => run(true)} disabled={loading}>
+        ❌ 请求失败
+      </button>{' '}
+      <button onClick={() => run(false)} disabled={loading}>
+        ✅ 请求成功
+      </button>
+      {loading && <p className="status loading">⏳ 请求中...</p>}
+      {error && <p className="status error">❌ {error.message}</p>}
+      {data && <p className="status success">✅ {data}</p>}
+      <h4>回调日志：</h4>
+      <ul className="log-list">
+        {logs.length === 0 && <li>暂无日志</li>}
+        {logs.map((msg, i) => (
+          <li key={i}>{msg}</li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+/** 示例 4：initialData + setData 乐观更新 */
+function InitialDataDemo() {
+  const { data, loading, run, setData } = useRequest(fetchUsers, {
+    immediate: false,
+    initialData: ['初始用户A', '初始用户B'],
+  });
+
+  const handleAdd = () => {
+    const name = prompt('输入用户名');
+    if (name) setData((prev) => [...(prev ?? []), name]);
+  };
+
+  return (
+    <section className="demo-card">
+      <h2>示例 4：initialData + setData 乐观更新</h2>
+      <p>
+        initialData 在请求完成前展示，setData 支持乐观更新（无需等待接口返回）。
+      </p>
+      {loading && <p className="status loading">⏳ 加载中...</p>}
+      {data && (
+        <ul>
+          {data.map((name) => (
+            <li key={name}>{name}</li>
+          ))}
+        </ul>
+      )}
+      <button onClick={() => run()} disabled={loading}>
+        🔄 请求服务端数据
+      </button>{' '}
+      <button onClick={handleAdd}>➕ 本地添加（乐观更新）</button>
+    </section>
+  );
+}
+
+/** 示例 5：run 返回 Promise，支持 await */
+function AwaitRunDemo() {
+  const { loading, run } = useRequest(fetchMaybeFail, {
+    immediate: false,
+  });
+  const [result, setResult] = useState<string | null>(null);
+
+  const handleRunAndAwait = async () => {
+    try {
+      const res = await run(false);
+      setResult(`run() 返回值: ${res}`);
+    } catch {
+      setResult('捕获到异常');
+    }
+  };
+
+  return (
+    <section className="demo-card">
+      <h2>示例 5：await run() 获取返回值</h2>
+      <p>run() 会透传 requestFn 的返回值，调用方可以直接 await 拿结果。</p>
+      <button onClick={handleRunAndAwait} disabled={loading}>
+        {loading ? '⏳ 请求中...' : '▶ 执行并 await'}
+      </button>
+      {result && <p className="status success">{result}</p>}
+    </section>
+  );
+}
+
+// ── 总入口 ──────────────────────────────────────────────────────────
+
+function App() {
+  return (
+    <main style={{ maxWidth: 720, margin: '0 auto', padding: 24 }}>
+      <h1>useRequest Hook — 示例集</h1>
+      <AutoFetchDemo />
+      <ManualTriggerDemo />
+      <CallbackDemo />
+      <InitialDataDemo />
+      <AwaitRunDemo />
+    </main>
+  );
+}
+
+export default App;
