@@ -1,3 +1,74 @@
+/* ── 导航 ────────────────────────────────────────────────────────── */
+
+.nav {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border, #e5e7eb);
+}
+
+.nav a {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 14px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.2s;
+}
+
+.nav a:hover {
+  background: var(--btn-hover-bg, #e5e7eb);
+}
+
+.nav a.active {
+  background: var(--btn-hover-bg, #e5e7eb);
+  font-weight: 600;
+}
+
+/* ── 首页 ────────────────────────────────────────────────────────── */
+
+.hook-list {
+  list-style: none;
+  padding: 0;
+}
+
+.hook-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  margin-bottom: 12px;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 10px;
+}
+
+.hook-list a {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.hook-list span {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/* ── Hook 示例公共样式 ────────────────────────────────────────────── */
+
+.demo-card input[type='text'] {
+  font-size: 14px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border, #d1d5db);
+  margin-right: 8px;
+  margin-bottom: 8px;
+}
+
+.demo-card h4 {
+  margin: 16px 0 4px;
+  font-size: 14px;
+}
+
 /* ── useRequest Demo ──────────────────────────────────────────────── */
 
 .demo-card {
