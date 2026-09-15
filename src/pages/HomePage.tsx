@@ -14,6 +14,10 @@ export default function HomePage() {
           <Link to="/use-cache">useCache</Link>
           <span>带过期时间的本地缓存：读写、有效期、local/session、跨标签页同步</span>
         </li>
+        <li>
+          <Link to="/use-modal">useModal</Link>
+          <span>弹窗状态管理：可见性与业务数据、open/close/confirm/cancel、关闭保留 data</span>
+        </li>
       </ul>
     </>
   );

@@ -55,7 +55,9 @@
 
 /* ── Hook 示例公共样式 ────────────────────────────────────────────── */
 
-.demo-card input[type='text'] {
+/* 不限定在 .demo-card 内：antd Modal 是 portal 渲染到 body 的，
+   弹窗里的输入框匹配不到 .demo-card 这个祖先 */
+input[type="text"] {
   font-size: 14px;
   padding: 6px 10px;
   border-radius: 6px;
