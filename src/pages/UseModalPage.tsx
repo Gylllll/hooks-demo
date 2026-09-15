@@ -26,7 +26,7 @@ function BasicDemo() {
   const { visible, open, close, cancel, toggle } = useModal({
     // 回调用 useCallback 包裹，hook 返回的 cancel 引用才不会被频繁重建
     // 只有 cancel() 会走到这里；close() 不会，所以日志里看不到这行
-    onCancel: useCallback(() => record('✅ onCancel 回调被触发（说明走的是 cancel）'), [record]),
+    onCancel: useCallback(() => record(`✅ onCancel 回调被触发（说明走的是 cancel）- ${new Date().toLocaleTimeString()}`), [record]),
   });
 
   return (
