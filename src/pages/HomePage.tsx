@@ -8,7 +8,9 @@ export default function HomePage() {
       <ul className="hook-list">
         <li>
           <Link to="/use-request">useRequest</Link>
-          <span>异步请求状态管理：loading / error / data 三态、手动触发、回调、乐观更新</span>
+          <span>
+            异步请求状态管理：loading / error / data 三态、手动触发、回调、乐观更新、竞态防护与取消
+          </span>
         </li>
         <li>
           <Link to="/use-cache">useCache</Link>
